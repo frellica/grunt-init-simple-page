@@ -70,7 +70,7 @@ module.exports = function(grunt) {
   };
 
   var 
-      filesToWatch = ['dev/src/**/*.js', 'dev/src/*.js'],
+      filesToWatch = ['dev/src/**/*.js', 'dev/src/*.js', 'dev/src/*.html'],
       defaultTasks = ['jshint', 'concat', 'copy:file'],
       deployTasks = ['jshint', 'concat', 'uglify', 'copy:file'];
 
