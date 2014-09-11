@@ -1,8 +1,6 @@
 /*
- * grunt-init-backbone
+ * grunt-init-empty
  *
- * Copyright (c) 2013 Nicolas Pigelet, contributors
- * Licensed under the MIT license.
  */
 
 'use strict';

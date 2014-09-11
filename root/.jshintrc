@@ -14,9 +14,6 @@
   "globals": { 
     "window": false,
     "document": false,
-    "$": false,
-    "_": false,
-    "Backbone": false,
-    "{%= namespace %}": true
+    "$": false
   }
 }
