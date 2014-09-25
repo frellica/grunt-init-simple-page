@@ -1,6 +1,6 @@
-# grunt-init-backbone
+# grunt-init-simple-page
 
-> Create a basic backbone js project [grunt-init][].
+> Create a basic html project with jQuery [grunt-init][].
 
 [grunt-init]: http://gruntjs.com/project-scaffolding
 
