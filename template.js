@@ -51,6 +51,13 @@ exports.template = function(grunt, init, done) {
         default: 'css', 
         validator: /^(less|sass|css)$/,
         warning: 'Currently Supported : less, sass and bare css'
+    },
+    {
+        name: 'enable_version',
+        message: 'Insert version number into js/css file name',
+        default: 'y',
+        validator: /^(y|n)$/,
+        warning: 'Please input y or n'
     }
 
   ], function(err, props) {
@@ -82,6 +89,7 @@ exports.template = function(grunt, init, done) {
             "grunt-contrib-connect" : "x", 
             "grunt-contrib-uglify" : "x", 
             "grunt-contrib-jshint" : "x", 
+            "grunt-cache-breaker" : "x", 
             "jquery" : "1.11.1", 
             // "backbone" : "x"
         };
@@ -91,6 +99,12 @@ exports.template = function(grunt, init, done) {
             devDependencies["grunt-contrib-cssmin"] = "x";
         }
         pkg.devDependencies = devDependencies;
+        if (props.enable_version === 'y') {
+            pkg.enableBuildVersion = true;
+        } else {
+            pkg.enableBuildVersion = false;
+        }
+        pkg.buildVersion = '';
         return pkg;
     });
     

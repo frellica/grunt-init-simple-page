@@ -3,7 +3,13 @@
 module.exports = function(grunt) {
 
   var pkg = grunt.file.readJSON('package.json');
-
+  function getVersion() {
+    var d = new Date();
+    return d.getFullYear() * 1e10 + (d.getMonth() + 1) * 1e8 + d.getDate() * 1e6 + d.getHours() * 1e4 + d.getMinutes() * 1e2 + d.getSeconds();
+  }
+  if (pkg.enableBuildVersion) {
+    pkg.buildVersion = '.' + getVersion();
+  }
   // Project configuration.
   var configOptions = {
 
@@ -30,16 +36,22 @@ module.exports = function(grunt) {
         cwd: 'dev/src',
         src: ['index.html'],
         dest: 'build'
+      },
+      release: {
+        expand: true,
+        cwd: 'dev/src',
+        src: ['index.html'],
+        dest: 'release'
       }
     },    
     uglify: {
       dist: {
         src: '<%= concat.dist.dest %>',
-        dest: 'build/js/main.min.js'
+        dest: 'release/js/main<%= pkg.buildVersion %>.min.js'
       },
       libs: {
         src: '<%= concat.libs.dest %>',
-        dest: 'build/js/libs/libs.min.js'
+        dest: 'release/js/libs/libs<%= pkg.buildVersion %>.min.js'
       }
     },
 
@@ -66,13 +78,34 @@ module.exports = function(grunt) {
       server:{
         base: './'
       }
+    },
+    cachebreaker: {
+      dev: {
+        options: {
+            match: ['libs.?js', 'main.*.js', 'style.*.css'],
+            position: 'filename',
+            replacement: 'min' + pkg.buildVersion
+        },
+        files: {
+            src: ['release/index.html']
+        }
+      }
+    },
+    clean: {
+      release:{
+        src: ['release'],
+        options: {
+          'no-write': false
+        }
+        // css: ["release/css/*.css", "!release/css/*.<%= pkg.buildVersion %>.min.js"]
+      }
     }
   };
 
   var 
       filesToWatch = ['dev/src/**/*.js', 'dev/src/*.js', 'dev/src/*.html'],
       defaultTasks = ['jshint', 'concat', 'copy:file'],
-      deployTasks = ['jshint', 'concat', 'uglify', 'copy:file'];
+      deployTasks = ['jshint', 'concat', 'uglify', 'copy:release', 'cachebreaker:dev'];
 
   switch ( pkg.css_preprocessor ) {
 
@@ -84,7 +117,7 @@ module.exports = function(grunt) {
         },
         deploy: {
           src: 'dev/less/style.less',
-          dest: 'build/css/style.css',
+          dest: 'release/css/style.min<%= pkg.buildVersion %>.css',
           options: {
             compress: true
           }
@@ -108,7 +141,7 @@ module.exports = function(grunt) {
         },
         deploy: {
           src: 'dev/sass/style.sass',
-          dest: 'build/css/style.css'
+          dest: 'release/css/style.min<%= pkg.buildVersion %>.css'
         }
       };
 
@@ -118,16 +151,23 @@ module.exports = function(grunt) {
       break;
     case "css" :
       configOptions.cssmin = {
-        build: {
+        dev: {
           expand: true,
           cwd: 'dev/css',
           src: ['*.css'],
           dest: 'build/css'
+        },
+        deploy: {
+          expand: true,
+          cwd: 'dev/css',
+          src: ['*.css'],
+          dest: 'release/css',
+          ext: '.min<%= pkg.buildVersion %>.css'
         }
       };
       filesToWatch.push('dev/css/*.css');
-      defaultTasks.unshift('cssmin:build');
-      // deployTasks.unshift('cssmin:build');
+      defaultTasks.unshift('cssmin:dev');
+      deployTasks.unshift('cssmin:deploy');
       break;
   }
 
@@ -141,7 +181,7 @@ module.exports = function(grunt) {
       tasks: 'default'
     }
   };
-
+  deployTasks.unshift('clean:release');
   grunt.initConfig(configOptions);
 
   // These plugins provide necessary tasks.
@@ -155,10 +195,13 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-connect');
+  grunt.loadNpmTasks('grunt-cache-breaker');
 
   // Default task.
   grunt.registerTask('default', defaultTasks);
   grunt.registerTask('deploy', deployTasks);
 
 };
+
